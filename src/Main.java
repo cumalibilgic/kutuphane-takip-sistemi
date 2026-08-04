@@ -11,7 +11,7 @@ public class Main {
     private static final Kutuphane kutuphane = new Kutuphane();
 
     public static void main(String[] args) {
-        ornekVeriYukle(); // demo amaçlı birkaç kayıt ekleyelim
+        baslangicMesaji();
 
         boolean calisiyor = true;
         while (calisiyor) {
@@ -28,14 +28,29 @@ public class Main {
                 case 7 -> aktifOduncleriListele();
                 case 8 -> gecikenleriListele();
                 case 9 -> kitapAraMenu();
+                case 10 -> tureGoreListeleMenu();
                 case 0 -> {
                     calisiyor = false;
-                    System.out.println("\nGörüşürüz! 👋");
+                    System.out.println("\nGörüşürüz! 👋 (Tüm verilerin kaydedildi.)");
                 }
                 default -> System.out.println("Geçersiz seçim, tekrar deneyin.\n");
             }
         }
         scanner.close();
+    }
+
+    private static void baslangicMesaji() {
+        boolean veriYok = kutuphane.tumKitaplar().isEmpty() && kutuphane.tumUyeler().isEmpty();
+        if (veriYok) {
+            // İlk çalıştırma: örnek veri yükleyelim ki menü boş görünmesin
+            ornekVeriYukle();
+            System.out.println("👋 İlk çalıştırma tespit edildi, örnek veriler yüklendi.");
+        } else {
+            System.out.printf("📂 Kayıtlı veriler yüklendi: %d kitap, %d üye, %d ödünç kaydı%n",
+                    kutuphane.tumKitaplar().size(), kutuphane.tumUyeler().size(),
+                    kutuphane.tumOduncKayitlari().size());
+        }
+        System.out.println();
     }
 
     private static void menuGoster() {
@@ -49,8 +64,9 @@ public class Main {
         System.out.println("5. Kitap Ödünç Ver");
         System.out.println("6. Kitap İade Al");
         System.out.println("7. Aktif Ödünçleri Listele");
-        System.out.println("8. Gecikmiş Kitapları Listele");
+        System.out.println("8. Gecikmiş Kitapları Listele (cezalı)");
         System.out.println("9. Kitap Ara");
+        System.out.println("10. Türe Göre Kitap Listele");
         System.out.println("0. Çıkış");
         System.out.println("=========================================");
     }
@@ -59,11 +75,16 @@ public class Main {
 
     private static void kitapEkleMenu() {
         System.out.println("\n--- Yeni Kitap Ekle ---");
-        String ad = satirOku("Kitap adı: ");
-        String yazar = satirOku("Yazar: ");
-        String isbn = satirOku("ISBN: ");
-        Kitap kitap = kutuphane.kitapEkle(ad, yazar, isbn);
-        System.out.println("✅ Eklendi: " + kitap + "\n");
+        try {
+            String ad = satirOku("Kitap adı: ");
+            String yazar = satirOku("Yazar: ");
+            String isbn = satirOku("ISBN: ");
+            KitapTuru tur = turSec();
+            Kitap kitap = kutuphane.kitapEkle(ad, yazar, isbn, tur);
+            System.out.println("✅ Eklendi: " + kitap + "\n");
+        } catch (IllegalArgumentException e) {
+            System.out.println("❌ Hata: " + e.getMessage() + "\n");
+        }
     }
 
     private static void kitaplariListele() {
@@ -79,10 +100,14 @@ public class Main {
 
     private static void uyeEkleMenu() {
         System.out.println("\n--- Yeni Üye Ekle ---");
-        String ad = satirOku("Ad: ");
-        String soyad = satirOku("Soyad: ");
-        Uye uye = kutuphane.uyeEkle(ad, soyad);
-        System.out.println("✅ Eklendi: " + uye + "\n");
+        try {
+            String ad = satirOku("Ad: ");
+            String soyad = satirOku("Soyad: ");
+            Uye uye = kutuphane.uyeEkle(ad, soyad);
+            System.out.println("✅ Eklendi: " + uye + "\n");
+        } catch (IllegalArgumentException e) {
+            System.out.println("❌ Hata: " + e.getMessage() + "\n");
+        }
     }
 
     private static void uyeleriListele() {
@@ -116,8 +141,9 @@ public class Main {
         int kitapId = intOku("İade edilecek kitabın ID'si: ");
         try {
             OduncKaydi kayit = kutuphane.kitapIadeAl(kitapId, LocalDate.now());
-            if (kayit.isGecikmis(kayit.getIadeTarihi())) {
-                System.out.println("⚠️  İade alındı ama gecikmeli!");
+            double ceza = kayit.gecikmeCezasi(LocalDate.now());
+            if (ceza > 0) {
+                System.out.printf("⚠️  İade alındı ama gecikmeli! Gecikme cezası: %.2f ₺%n", ceza);
             } else {
                 System.out.println("✅ İade alındı, teşekkürler!");
             }
@@ -145,9 +171,15 @@ public class Main {
             System.out.println("Gecikmiş kitap yok. 🎉\n");
             return;
         }
+        double toplamCeza = 0;
         for (OduncKaydi k : gecikenler) {
-            System.out.println(k + " | " + k.gecikenGunSayisi(LocalDate.now()) + " gün gecikmiş");
+            double ceza = k.gecikmeCezasi(LocalDate.now());
+            toplamCeza += ceza;
+            System.out.printf("%s | %d gün gecikmiş | Ceza: %.2f ₺%n",
+                    k, k.gecikenGunSayisi(LocalDate.now()), ceza);
         }
+        System.out.printf("---%nToplam bekleyen ceza: %.2f ₺ (günlük ceza: %.2f ₺)%n",
+                toplamCeza, OduncKaydi.getGunlukCezaMiktari());
         System.out.println();
     }
 
@@ -157,6 +189,18 @@ public class Main {
         List<Kitap> sonuclar = kutuphane.kitapAra(anahtar);
         if (sonuclar.isEmpty()) {
             System.out.println("Sonuç bulunamadı.\n");
+            return;
+        }
+        for (Kitap k : sonuclar) System.out.println(k);
+        System.out.println();
+    }
+
+    private static void tureGoreListeleMenu() {
+        System.out.println("\n--- Türe Göre Kitap Listele ---");
+        KitapTuru tur = turSec();
+        List<Kitap> sonuclar = kutuphane.kitaplariTuruneGoreListele(tur);
+        if (sonuclar.isEmpty()) {
+            System.out.println("Bu türde kitap bulunamadı.\n");
             return;
         }
         for (Kitap k : sonuclar) System.out.println(k);
@@ -182,12 +226,26 @@ public class Main {
         }
     }
 
-    // ---------- DEMO VERİSİ ----------
+    private static KitapTuru turSec() {
+        KitapTuru[] turler = KitapTuru.values();
+        System.out.println("Tür seçin:");
+        for (int i = 0; i < turler.length; i++) {
+            System.out.println("  " + (i + 1) + ". " + turler[i].getGorunenAd());
+        }
+        int secim = intOku("Seçiminiz: ");
+        if (secim >= 1 && secim <= turler.length) {
+            return turler[secim - 1];
+        }
+        System.out.println("Geçersiz seçim, \"Diğer\" olarak ayarlandı.");
+        return KitapTuru.DIGER;
+    }
+
+    // ---------- DEMO VERİSİ (sadece ilk çalıştırmada) ----------
 
     private static void ornekVeriYukle() {
-        kutuphane.kitapEkle("Suç ve Ceza", "Dostoyevski", "978-0140449136");
-        kutuphane.kitapEkle("1984", "George Orwell", "978-0451524935");
-        kutuphane.kitapEkle("Simyacı", "Paulo Coelho", "978-0061122415");
+        kutuphane.kitapEkle("Suç ve Ceza", "Dostoyevski", "978-0140449136", KitapTuru.ROMAN);
+        kutuphane.kitapEkle("1984", "George Orwell", "978-0451524935", KitapTuru.BILIM_KURGU);
+        kutuphane.kitapEkle("Simyacı", "Paulo Coelho", "978-0061122415", KitapTuru.FELSEFE);
         kutuphane.uyeEkle("Cumali", "Bilgiç");
         kutuphane.uyeEkle("Ayşe", "Yılmaz");
     }

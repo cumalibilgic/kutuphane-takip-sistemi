@@ -4,10 +4,12 @@ import java.time.temporal.ChronoUnit;
 /**
  * Bir kitabın bir üyeye ödünç verilme kaydını temsil eder.
  * Ödünç verme tarihi, teslim tarihi (son tarih) ve iade tarihi (henüz iade
- * edilmediyse null) bilgilerini tutar.
+ * edilmediyse null) bilgilerini tutar. Ayrıca gecikme durumunda ceza
+ * hesaplaması da bu sınıfın sorumluluğundadır.
  */
 public class OduncKaydi {
     private static final int ODUNC_SURESI_GUN = 14; // varsayılan ödünç süresi
+    private static final double GUNLUK_CEZA = 1.0;  // gecikilen her gün için ceza (₺)
 
     private final Kitap kitap;
     private final Uye uye;
@@ -59,6 +61,24 @@ public class OduncKaydi {
     public long gecikenGunSayisi(LocalDate bugun) {
         if (!isGecikmis(bugun)) return 0;
         return ChronoUnit.DAYS.between(sonTeslimTarihi, bugun);
+    }
+
+    /**
+     * Gecikme cezasını hesaplar.
+     * Kitap iade edilmişse gerçek iade tarihine göre, edilmemişse verilen
+     * referans tarihe (genelde bugün) göre hesaplanır. Gecikme yoksa 0 döner.
+     */
+    public double gecikmeCezasi(LocalDate referansTarih) {
+        LocalDate karsilastirmaTarihi = isIadeEdildi() ? iadeTarihi : referansTarih;
+        if (!karsilastirmaTarihi.isAfter(sonTeslimTarihi)) {
+            return 0.0;
+        }
+        long gecikenGun = ChronoUnit.DAYS.between(sonTeslimTarihi, karsilastirmaTarihi);
+        return gecikenGun * GUNLUK_CEZA;
+    }
+
+    public static double getGunlukCezaMiktari() {
+        return GUNLUK_CEZA;
     }
 
     @Override

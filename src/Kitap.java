@@ -8,13 +8,20 @@ public class Kitap {
     private String yazar;
     private String isbn;
     private boolean musait; // true = rafta, false = ödünçte
+    private KitapTuru tur;
 
-    public Kitap(int id, String ad, String yazar, String isbn) {
+    public Kitap(int id, String ad, String yazar, String isbn, KitapTuru tur) {
         this.id = id;
         this.ad = ad;
         this.yazar = yazar;
         this.isbn = isbn;
         this.musait = true; // yeni eklenen kitap başlangıçta müsaittir
+        this.tur = tur;
+    }
+
+    /** Tür belirtilmeden çağrılırsa varsayılan olarak DIGER atanır. */
+    public Kitap(int id, String ad, String yazar, String isbn) {
+        this(id, ad, yazar, isbn, KitapTuru.DIGER);
     }
 
     public int getId() {
@@ -49,9 +56,18 @@ public class Kitap {
         this.musait = musait;
     }
 
+    public KitapTuru getTur() {
+        return tur;
+    }
+
+    public void setTur(KitapTuru tur) {
+        this.tur = tur;
+    }
+
     @Override
     public String toString() {
         String durum = musait ? "Rafta" : "Ödünçte";
-        return String.format("[%d] %-30s - %-20s (ISBN: %s) | Durum: %s", id, ad, yazar, isbn, durum);
+        return String.format("[%d] %-30s - %-20s (%s) | ISBN: %s | Durum: %s",
+                id, ad, yazar, tur.getGorunenAd(), isbn, durum);
     }
 }
