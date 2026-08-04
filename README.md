@@ -1,36 +1,68 @@
 # 📚 Kütüphane Takip Sistemi
 
-Java ile yazılmış, konsol tabanlı bir kütüphane yönetim uygulaması.
+[![Java CI](https://github.com/cumalibilgic/kutuphane-takip-sistemi/actions/workflows/java-ci.yml/badge.svg)](https://github.com/cumalibilgic/kutuphane-takip-sistemi/actions/workflows/java-ci.yml)
+![Java](https://img.shields.io/badge/Java-21-ED8B00?logo=openjdk&logoColor=white)
+![Tests](https://img.shields.io/badge/tests-24%20passing-brightgreen)
+![License](https://img.shields.io/badge/License-MIT-blue.svg)
+
+Java ile yazılmış, konsol tabanlı bir kütüphane yönetim uygulaması. Kitap/üye yönetimi, ödünç-iade takibi, gecikme cezası hesaplama ve kalıcı veri saklama içerir — hepsi saf Java ile, dış bağımlılık olmadan.
+
+## 🎬 Demo
+
+> 💡 Buraya programın çalışırken kısa bir ekran kaydı (GIF) eklemen, ziyaretçilerin ilk bakışta ne yaptığını anlamasını sağlar ve projeyi çok daha çekici gösterir. Windows'ta ücretsiz [ScreenToGif](https://www.screentogif.com/) ile terminali kaydedip GIF olarak dışa aktarabilir, sonra buraya `![demo](demo.gif)` şeklinde ekleyebilirsin.
 
 ## Özellikler
 
-- Kitap ekleme, listeleme, arama
-- Üye ekleme, listeleme
-- Kitap ödünç verme / iade alma
-- Aktif ödünç kayıtlarını görüntüleme
-- Gecikmiş kitapları ve kaç gün geciktiğini gösterme
-- Hatalı işlemler için özel exception yönetimi (örn. müsait olmayan kitabı ödünç vermeye çalışmak)
+- 📖 Kitap ekleme (türle birlikte), listeleme, arama, **türe göre filtreleme**
+- 👤 Üye ekleme, listeleme
+- 🔄 Kitap ödünç verme / iade alma
+- 📋 Aktif ödünç kayıtlarını görüntüleme
+- ⏰ Gecikmiş kitapları ve gecikme cezasını (₺) görüntüleme
+- 💾 Veriler dosyaya kaydedilir — programı kapatıp açsan bile kaybolmaz
+- ✅ Girdi doğrulama (boş isim/yazar gibi hatalı verileri engeller)
+- ⚠️ Hatalı işlemler için özel exception yönetimi (örn. müsait olmayan kitabı ödünç vermeye çalışmak)
+- 🧪 24 JUnit testiyle doğrulanmış iş mantığı
+- 🤖 GitHub Actions ile her push'ta otomatik derleme + test
 
 ## Kullanılan OOP Kavramları
 
 | Kavram | Nerede kullanıldı |
 |---|---|
 | Kapsülleme (Encapsulation) | Tüm sınıflarda `private` alanlar + get/set metotları |
-| Sınıflar arası ilişki (Composition) | `OduncKaydi`, bir `Kitap` ve bir `Uye` nesnesini bir arada tutar |
-| Exception Handling | `KutuphaneException` ile iş mantığı hataları yönetildi |
-| Koleksiyonlar | `ArrayList` ile kitap/üye/kayıt listeleri tutuldu |
-| `LocalDate` API | Ödünç, teslim ve iade tarihleri hesaplandı |
+| Kalıtım kökenli tasarım (Composition) | `OduncKaydi`, bir `Kitap` ve bir `Uye` nesnesini bir arada tutar |
+| Enum | `KitapTuru` ile kitap kategorileri güvenli/sabit değerler olarak modellendi |
+| Metot Aşırı Yükleme (Overloading) | `kitapEkle(...)` hem türlü hem türsüz çağrılabilir |
+| Exception Handling | `KutuphaneException` (iş kuralı hataları) + `IllegalArgumentException` (geçersiz girdi) |
+| Koleksiyonlar | `ArrayList`, `HashMap` ile kitap/üye/kayıt listeleri tutuldu |
+| Dosya G/Ç (I/O) | `Depolama` sınıfı verileri `.csv` dosyalarına okur/yazar |
+| `LocalDate` API | Ödünç, teslim, iade tarihleri ve gecikme cezası hesaplandı |
+| Test Edilebilirlik | `Kutuphane(false)` ile kalıcılık kapatılabilir — testler gerçek verilerle karışmaz |
 
 ## Dosya Yapısı
 
 ```
-src/
- ├── Kitap.java             # Kitap varlığı
- ├── Uye.java                # Üye varlığı
- ├── OduncKaydi.java         # Ödünç/iade kaydı + gecikme hesaplama
- ├── Kutuphane.java          # Tüm iş mantığı (CRUD + ödünç/iade işlemleri)
- ├── KutuphaneException.java # Özel exception sınıfı
- └── Main.java                # Konsol menüsü / kullanıcı arayüzü
+kutuphane-takip-sistemi/
+├── README.md
+├── LICENSE
+├── .gitignore
+├── .github/
+│   └── workflows/
+│       └── java-ci.yml         # Her push'ta otomatik derleme + test
+├── src/
+│   ├── Kitap.java               # Kitap varlığı
+│   ├── KitapTuru.java           # Kitap kategorisi (enum)
+│   ├── Uye.java                  # Üye varlığı
+│   ├── OduncKaydi.java           # Ödünç/iade kaydı + gecikme & ceza hesaplama
+│   ├── Kutuphane.java            # Tüm iş mantığı (CRUD + ödünç/iade + kalıcılık + doğrulama)
+│   ├── Depolama.java             # Dosyaya kaydetme/yükleme (.csv)
+│   ├── KutuphaneException.java   # Özel exception sınıfı
+│   └── Main.java                 # Konsol menüsü / kullanıcı arayüzü
+├── test/
+│   ├── KutuphaneTest.java        # İş mantığı testleri (17 test)
+│   └── OduncKaydiTest.java       # Gecikme/ceza hesaplama testleri (7 test)
+├── lib/
+│   └── junit-platform-console-standalone-1.9.1.jar  # Testleri çalıştırmak için hazır jar
+└── veri/                          # Program çalışınca otomatik oluşur (.gitignore'da, repoya girmez)
 ```
 
 ## Nasıl Çalıştırılır
@@ -41,11 +73,33 @@ javac *.java
 java Main
 ```
 
-Program açıldığında birkaç örnek kitap ve üye otomatik olarak yüklenir, böylece menüyü hemen deneyebilirsin.
+Program ilk çalıştırıldığında birkaç örnek kitap/üye otomatik yüklenir. Sonraki çalıştırmalarda, `veri/` klasöründeki dosyalardan kaldığın yerden devam eder — hiçbir şey kaybolmaz.
+
+## Testleri Çalıştırma
+
+Bu proje Maven/Gradle kullanmıyor (öğrenme amaçlı, mümkün olduğunca sade tutuldu), bu yüzden testleri çalıştırmak için gereken JUnit jar'ı `lib/` klasörüne hazır olarak eklendi:
+
+```bash
+# Derleme (src + test birlikte)
+javac -cp lib/junit-platform-console-standalone-1.9.1.jar -d out src/*.java test/*.java
+
+# Testleri çalıştırma
+java -jar lib/junit-platform-console-standalone-1.9.1.jar execute -cp out --scan-classpath
+```
+
+**Not:** IntelliJ IDEA gibi bir IDE kullanıyorsan, projeyi açıp test dosyalarına sağ tıklayarak "Run Tests" demen yeterli — IDE, JUnit'i otomatik tanır ve jar'la uğraşmana gerek kalmaz. Gerçek profesyonel projelerde bu bağımlılık yönetimi Maven/Gradle ile yapılır; burada basitlik için jar doğrudan pakete eklendi.
+
+## Sürekli Entegrasyon (CI)
+
+`main` dalına her push'ta veya her pull request'te, [GitHub Actions](.github/workflows/java-ci.yml) otomatik olarak projeyi derler ve tüm testleri çalıştırır. Böylece kodun her zaman derlenebilir ve testlerin her zaman geçer durumda kaldığından emin olunur — üstteki rozet canlı durumu gösterir.
+
+## Lisans
+
+Bu proje [MIT Lisansı](LICENSE) ile lisanslanmıştır.
 
 ## Geliştirme Fikirleri (istersen ileride eklenebilir)
 
-- [ ] Verileri dosyaya kaydetme (örn. `.txt` veya `.json`)
 - [ ] Basit bir grafik arayüz (Java Swing/JavaFX)
-- [ ] Gecikme cezası hesaplama
-- [ ] Birim testleri (JUnit)
+- [ ] Birden fazla üyeye aynı anda ödünç limiti koyma
+- [ ] Maven/Gradle'a geçiş (gerçek bağımlılık yönetimi)
+- [ ] İstatistik raporu (en çok ödünç alınan kitap, en aktif üye)
