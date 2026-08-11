@@ -1,6 +1,7 @@
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -48,6 +49,13 @@ public class Kutuphane {
             siradakiUyeId = enBuyukUyeId() + 1;
         } catch (IOException e) {
             System.out.println("⚠️  Kayıtlı veriler yüklenemedi, boş başlanıyor: " + e.getMessage());
+        } catch (RuntimeException e) {
+            // Veri dosyası elle düzenlenmiş/bozulmuş olabilir (örn. beklenmeyen
+            // sayı formatı, tanınmayan tür adı, eksik alan). Böyle bir durumda
+            // programın tamamen çökmesindense, o ana kadar başarıyla okunmuş
+            // veriyle (veya boş listelerle) devam etmesi tercih edilir.
+            System.out.println("⚠️  Veri dosyası bozuk görünüyor, kısmi/boş veriyle başlanıyor: "
+                    + e.getClass().getSimpleName() + " - " + e.getMessage());
         }
     }
 
@@ -74,10 +82,22 @@ public class Kutuphane {
         return max;
     }
 
-    /** Boş/null değerleri engeller. Geçersizse IllegalArgumentException fırlatır. */
+    /**
+     * Boş/null değerleri ve depolama formatını bozacak karakterleri engeller.
+     * Geçersizse IllegalArgumentException fırlatır.
+     *
+     * Not: ';' karakteri özellikle reddedilir çünkü Depolama sınıfı verileri
+     * ';' ile ayrılmış CSV benzeri dosyalara yazar. Alan içinde ';' olması
+     * kayıt dosyasının satır yapısını bozar ve sonraki açılışta programın
+     * çökmesine (veya verinin yanlış yorumlanmasına) yol açar.
+     */
     private void dogrula(String deger, String alanAdi) {
         if (deger == null || deger.isBlank()) {
             throw new IllegalArgumentException(alanAdi + " boş olamaz.");
+        }
+        if (deger.contains(";")) {
+            throw new IllegalArgumentException(
+                    alanAdi + " ';' karakteri içeremez (veri dosyası formatını bozar).");
         }
     }
 
@@ -99,8 +119,16 @@ public class Kutuphane {
         return kitapEkle(ad, yazar, isbn, KitapTuru.DIGER);
     }
 
+    /**
+     * Kitap listesinin değiştirilemez (unmodifiable) bir görünümünü döndürür.
+     * Not: Önceden bu metot iç listenin doğrudan referansını döndürüyordu;
+     * bu, çağıran kodun kitaplar.clear()/add() gibi çağrılarla Kutuphane'nin
+     * iç durumunu (ve dosya kalıcılığıyla senkronluğunu) habersizce
+     * bozabilmesine yol açıyordu. Artık böyle bir çağrı UnsupportedOperationException
+     * fırlatır.
+     */
     public List<Kitap> tumKitaplar() {
-        return kitaplar;
+        return Collections.unmodifiableList(kitaplar);
     }
 
     public Kitap kitapBul(int id) throws KutuphaneException {
@@ -142,8 +170,9 @@ public class Kutuphane {
         return uye;
     }
 
+    /** Üye listesinin değiştirilemez görünümünü döndürür (bkz. tumKitaplar() notu). */
     public List<Uye> tumUyeler() {
-        return uyeler;
+        return Collections.unmodifiableList(uyeler);
     }
 
     public Uye uyeBul(int id) throws KutuphaneException {
@@ -184,8 +213,9 @@ public class Kutuphane {
         throw new KutuphaneException("\"" + kitap.getAd() + "\" için aktif bir ödünç kaydı bulunamadı.");
     }
 
+    /** Ödünç kayıtları listesinin değiştirilemez görünümünü döndürür (bkz. tumKitaplar() notu). */
     public List<OduncKaydi> tumOduncKayitlari() {
-        return oduncKayitlari;
+        return Collections.unmodifiableList(oduncKayitlari);
     }
 
     public List<OduncKaydi> aktifOduncKayitlari() {

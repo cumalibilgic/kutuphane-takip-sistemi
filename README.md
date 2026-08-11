@@ -2,7 +2,7 @@
 
 [![Java CI](https://github.com/cumalibilgic/kutuphane-takip-sistemi/actions/workflows/java-ci.yml/badge.svg)](https://github.com/cumalibilgic/kutuphane-takip-sistemi/actions/workflows/java-ci.yml)
 ![Java](https://img.shields.io/badge/Java-21-ED8B00?logo=openjdk&logoColor=white)
-![Tests](https://img.shields.io/badge/tests-24%20passing-brightgreen)
+![Tests](https://img.shields.io/badge/tests-31%20passing-brightgreen)
 ![License](https://img.shields.io/badge/License-MIT-blue.svg)
 
 Java ile yazılmış, konsol tabanlı bir kütüphane yönetim uygulaması. Kitap/üye yönetimi, ödünç-iade takibi, gecikme cezası hesaplama ve kalıcı veri saklama içerir — hepsi saf Java ile, dış bağımlılık olmadan.
@@ -21,7 +21,7 @@ Java ile yazılmış, konsol tabanlı bir kütüphane yönetim uygulaması. Kita
 - 💾 Veriler dosyaya kaydedilir — programı kapatıp açsan bile kaybolmaz
 - ✅ Girdi doğrulama (boş isim/yazar gibi hatalı verileri engeller)
 - ⚠️ Hatalı işlemler için özel exception yönetimi (örn. müsait olmayan kitabı ödünç vermeye çalışmak)
-- 🧪 24 JUnit testiyle doğrulanmış iş mantığı
+- 🧪 31 JUnit testiyle doğrulanmış iş mantığı (Depolama dosya G/Ç senaryoları dahil)
 - 🤖 GitHub Actions ile her push'ta otomatik derleme + test
 
 ## Kullanılan OOP Kavramları
@@ -59,7 +59,8 @@ kutuphane-takip-sistemi/
 │   └── Main.java                 # Konsol menüsü / kullanıcı arayüzü
 ├── test/
 │   ├── KutuphaneTest.java        # İş mantığı testleri (17 test)
-│   └── OduncKaydiTest.java       # Gecikme/ceza hesaplama testleri (7 test)
+│   ├── OduncKaydiTest.java       # Gecikme/ceza hesaplama testleri (7 test)
+│   └── DepolamaTest.java         # Dosyaya kaydetme/yükleme (CSV) testleri (7 test)
 └── veri/                          # Program çalışınca otomatik oluşur (.gitignore'da, repoya girmez)
 
 # Not: lib/ klasörü (JUnit jar'ı) da .gitignore'da — hem CI hem yerel test
