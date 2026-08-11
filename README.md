@@ -60,9 +60,10 @@ kutuphane-takip-sistemi/
 ├── test/
 │   ├── KutuphaneTest.java        # İş mantığı testleri (17 test)
 │   └── OduncKaydiTest.java       # Gecikme/ceza hesaplama testleri (7 test)
-├── lib/
-│   └── junit-platform-console-standalone-1.9.1.jar  # Testleri çalıştırmak için hazır jar
 └── veri/                          # Program çalışınca otomatik oluşur (.gitignore'da, repoya girmez)
+
+# Not: lib/ klasörü (JUnit jar'ı) da .gitignore'da — hem CI hem yerel test
+# çalıştırma bu jar'ı ihtiyaç anında indirir, repoya commit edilmez.
 ```
 
 ## Nasıl Çalıştırılır
@@ -77,17 +78,24 @@ Program ilk çalıştırıldığında birkaç örnek kitap/üye otomatik yüklen
 
 ## Testleri Çalıştırma
 
-Bu proje Maven/Gradle kullanmıyor (öğrenme amaçlı, mümkün olduğunca sade tutuldu), bu yüzden testleri çalıştırmak için gereken JUnit jar'ı `lib/` klasörüne hazır olarak eklendi:
+Proje, JUnit test çalıştırıcısını (`junit-platform-console-standalone`) Git'e commit etmek yerine ihtiyaç anında indirir — bu, gereksiz binary dosyaların repo geçmişine girmesini önler. Hem CI'da hem yerelinde aynı yaklaşım kullanılır:
 
 ```bash
-# Derleme (src + test birlikte)
+# 1) JUnit çalıştırıcısını bir kere indir (lib/ klasörüne)
+mkdir -p lib
+curl -L -o lib/junit-platform-console-standalone-1.9.1.jar \
+  https://repo1.maven.org/maven2/org/junit/platform/junit-platform-console-standalone/1.9.1/junit-platform-console-standalone-1.9.1.jar
+
+# 2) Derleme (src + test birlikte)
 javac -cp lib/junit-platform-console-standalone-1.9.1.jar -d out src/*.java test/*.java
 
-# Testleri çalıştırma
-java -jar lib/junit-platform-console-standalone-1.9.1.jar execute -cp out --scan-classpath
+# 3) Testleri çalıştırma
+java -jar lib/junit-platform-console-standalone-1.9.1.jar -cp out --scan-classpath
 ```
 
-**Not:** IntelliJ IDEA gibi bir IDE kullanıyorsan, projeyi açıp test dosyalarına sağ tıklayarak "Run Tests" demen yeterli — IDE, JUnit'i otomatik tanır ve jar'la uğraşmana gerek kalmaz. Gerçek profesyonel projelerde bu bağımlılık yönetimi Maven/Gradle ile yapılır; burada basitlik için jar doğrudan pakete eklendi.
+`lib/` klasörü `.gitignore`'da olduğu için indirdiğin bu dosya repoya karışmaz.
+
+**Not:** IntelliJ IDEA gibi bir IDE kullanıyorsan, projeyi açıp test dosyalarına sağ tıklayarak "Run Tests" demen yeterli — IDE, JUnit'i otomatik tanır ve manuel indirmeyle uğraşmana gerek kalmaz.
 
 ## Sürekli Entegrasyon (CI)
 
