@@ -1,11 +1,12 @@
 # 📚 Kütüphane Takip Sistemi
 
 [![Java CI](https://github.com/cumalibilgic/kutuphane-takip-sistemi/actions/workflows/java-ci.yml/badge.svg)](https://github.com/cumalibilgic/kutuphane-takip-sistemi/actions/workflows/java-ci.yml)
-![Java](https://img.shields.io/badge/Java-21-ED8B00?logo=openjdk&logoColor=white)
+![Java](https://img.shields.io/badge/Java-25-ED8B00?logo=openjdk&logoColor=white)
+![Maven](https://img.shields.io/badge/build-Maven-C71A36?logo=apachemaven&logoColor=white)
 ![Tests](https://img.shields.io/badge/tests-31%20passing-brightgreen)
 ![License](https://img.shields.io/badge/License-MIT-blue.svg)
 
-Java ile yazılmış, konsol tabanlı bir kütüphane yönetim uygulaması. Kitap/üye yönetimi, ödünç-iade takibi, gecikme cezası hesaplama ve kalıcı veri saklama içerir — hepsi saf Java ile, dış bağımlılık olmadan.
+Java ile yazılmış, konsol tabanlı bir kütüphane yönetim uygulaması. Kitap/üye yönetimi, ödünç-iade takibi, gecikme cezası hesaplama ve kalıcı veri saklama içerir. Maven ile build yönetimi ve JUnit 5 testleri içerir.
 
 ## 🎬 Demo
 
@@ -42,73 +43,71 @@ Java ile yazılmış, konsol tabanlı bir kütüphane yönetim uygulaması. Kita
 
 ```
 kutuphane-takip-sistemi/
+├── pom.xml                          # Maven build tanımı (bağımlılıklar burada)
 ├── README.md
 ├── LICENSE
 ├── .gitignore
 ├── .github/
 │   └── workflows/
-│       └── java-ci.yml         # Her push'ta otomatik derleme + test
-├── src/
-│   ├── Kitap.java               # Kitap varlığı
-│   ├── KitapTuru.java           # Kitap kategorisi (enum)
-│   ├── Uye.java                  # Üye varlığı
-│   ├── OduncKaydi.java           # Ödünç/iade kaydı + gecikme & ceza hesaplama
-│   ├── Kutuphane.java            # Tüm iş mantığı (CRUD + ödünç/iade + kalıcılık + doğrulama)
-│   ├── Depolama.java             # Dosyaya kaydetme/yükleme (.csv)
-│   ├── KutuphaneException.java   # Özel exception sınıfı
-│   └── Main.java                 # Konsol menüsü / kullanıcı arayüzü
-├── test/
-│   ├── KutuphaneTest.java        # İş mantığı testleri (17 test)
-│   ├── OduncKaydiTest.java       # Gecikme/ceza hesaplama testleri (7 test)
-│   └── DepolamaTest.java         # Dosyaya kaydetme/yükleme (CSV) testleri (7 test)
-└── veri/                          # Program çalışınca otomatik oluşur (.gitignore'da, repoya girmez)
-
-# Not: lib/ klasörü (JUnit jar'ı) da .gitignore'da — hem CI hem yerel test
-# çalıştırma bu jar'ı ihtiyaç anında indirir, repoya commit edilmez.
+│       └── java-ci.yml              # Her push'ta otomatik derleme + test
+└── src/
+    ├── main/java/com/kutuphane/
+    │   ├── Kitap.java               # Kitap varlığı
+    │   ├── KitapTuru.java           # Kitap kategorisi (enum)
+    │   ├── Uye.java                 # Üye varlığı
+    │   ├── OduncKaydi.java          # Ödünç/iade kaydı + gecikme & ceza hesaplama
+    │   ├── Kutuphane.java           # Tüm iş mantığı (CRUD + ödünç/iade + kalıcılık)
+    │   ├── Depolama.java            # Dosyaya kaydetme/yükleme (.csv)
+    │   ├── KutuphaneException.java  # Özel exception sınıfı
+    │   └── Main.java                # Konsol menüsü / kullanıcı arayüzü
+    └── test/java/com/kutuphane/
+        ├── KutuphaneTest.java       # İş mantığı testleri (17 test)
+        ├── OduncKaydiTest.java      # Gecikme/ceza hesaplama testleri (7 test)
+        └── DepolamaTest.java        # Dosyaya kaydetme/yükleme (CSV) testleri (7 test)
 ```
 
 ## Nasıl Çalıştırılır
 
+**Ön koşul:** Java 21+ ve Maven 3.6+ kurulu olmalı.
+
 ```bash
-cd src
-javac *.java
-java Main
+# Derle ve çalıştır
+mvn compile exec:java -Dexec.mainClass="com.kutuphane.Main"
+```
+
+Ya da önce JAR oluşturup çalıştırabilirsiniz:
+
+```bash
+mvn package
+java -jar target/kutuphane-takip-sistemi-1.0.0.jar
 ```
 
 Program ilk çalıştırıldığında birkaç örnek kitap/üye otomatik yüklenir. Sonraki çalıştırmalarda, `veri/` klasöründeki dosyalardan kaldığın yerden devam eder — hiçbir şey kaybolmaz.
 
 ## Testleri Çalıştırma
 
-Proje, JUnit test çalıştırıcısını (`junit-platform-console-standalone`) Git'e commit etmek yerine ihtiyaç anında indirir — bu, gereksiz binary dosyaların repo geçmişine girmesini önler. Hem CI'da hem yerelinde aynı yaklaşım kullanılır:
-
 ```bash
-# 1) JUnit çalıştırıcısını bir kere indir (lib/ klasörüne)
-mkdir -p lib
-curl -L -o lib/junit-platform-console-standalone-1.9.1.jar \
-  https://repo1.maven.org/maven2/org/junit/platform/junit-platform-console-standalone/1.9.1/junit-platform-console-standalone-1.9.1.jar
-
-# 2) Derleme (src + test birlikte)
-javac -cp lib/junit-platform-console-standalone-1.9.1.jar -d out src/*.java test/*.java
-
-# 3) Testleri çalıştırma
-java -jar lib/junit-platform-console-standalone-1.9.1.jar -cp out --scan-classpath
+mvn test
 ```
 
-`lib/` klasörü `.gitignore`'da olduğu için indirdiğin bu dosya repoya karışmaz.
+Maven, JUnit 5 bağımlılığını otomatik indirir ve tüm 31 testi çalıştırır. Test raporu `target/surefire-reports/` klasöründe oluşur.
 
-**Not:** IntelliJ IDEA gibi bir IDE kullanıyorsan, projeyi açıp test dosyalarına sağ tıklayarak "Run Tests" demen yeterli — IDE, JUnit'i otomatik tanır ve manuel indirmeyle uğraşmana gerek kalmaz.
+**Not:** IntelliJ IDEA gibi bir IDE kullanıyorsan, `pom.xml`'i açık olan proje olarak tanıt — IDE Maven'ı otomatik tanır, testlere sağ tıklayarak "Run Tests" yapman yeterli.
 
 ## Sürekli Entegrasyon (CI)
 
-`main` dalına her push'ta veya her pull request'te, [GitHub Actions](.github/workflows/java-ci.yml) otomatik olarak projeyi derler ve tüm testleri çalıştırır. Böylece kodun her zaman derlenebilir ve testlerin her zaman geçer durumda kaldığından emin olunur — üstteki rozet canlı durumu gösterir.
+`main` dalına her push'ta veya her pull request'te, [GitHub Actions](.github/workflows/java-ci.yml) otomatik olarak `mvn test` komutunu çalıştırır. Böylece kodun her zaman derlenebilir ve testlerin her zaman geçer durumda kaldığından emin olunur — üstteki rozet canlı durumu gösterir.
 
 ## Lisans
 
 Bu proje [MIT Lisansı](LICENSE) ile lisanslanmıştır.
 
-## Geliştirme Fikirleri (istersen ileride eklenebilir)
+## Geliştirme Fikirleri (ileride eklenecekler)
 
-- [ ] Basit bir grafik arayüz (Java Swing/JavaFX)
-- [ ] Birden fazla üyeye aynı anda ödünç limiti koyma
-- [ ] Maven/Gradle'a geçiş (gerçek bağımlılık yönetimi)
-- [ ] İstatistik raporu (en çok ödünç alınan kitap, en aktif üye)
+- [x] Maven ile build yönetimi
+- [ ] Eksik CRUD: kitap/üye silme ve güncelleme
+- [ ] Stream API ile kod modernizasyonu
+- [ ] Spring Boot REST API
+- [ ] PostgreSQL veritabanı entegrasyonu
+- [ ] Docker ile paketleme ve canlıya alma
+- [ ] Swagger UI ile API dokümantasyonu

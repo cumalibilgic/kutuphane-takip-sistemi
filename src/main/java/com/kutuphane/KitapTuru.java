@@ -1,3 +1,5 @@
+package com.kutuphane;
+
 /**
  * Bir kitabın ait olduğu tür/kategori.
  * Enum kullanmak, olası değerleri sabitler ve yanlış bir string

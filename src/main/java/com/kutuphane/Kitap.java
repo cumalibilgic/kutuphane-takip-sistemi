@@ -1,3 +1,5 @@
+package com.kutuphane;
+
 /**
  * Kütüphanedeki bir kitabı temsil eder.
  * Kapsülleme (encapsulation) örneği: alanlar private, erişim get/set metotlarıyla.

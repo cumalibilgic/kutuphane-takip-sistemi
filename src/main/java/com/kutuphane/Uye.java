@@ -1,3 +1,5 @@
+package com.kutuphane;
+
 /**
  * Kütüphaneye kayıtlı bir üyeyi temsil eder.
  */

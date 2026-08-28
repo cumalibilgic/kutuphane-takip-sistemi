@@ -1,11 +1,8 @@
 # Derlenmiş Java dosyaları
 *.class
-/out/
-/out-test/
-/bin/
 
-# İndirilen bağımlılıklar (JUnit jar'ı burada, commit edilmez — bkz. README)
-/lib/
+# Maven derleme çıktısı
+/target/
 
 # Kişisel kütüphane verileri (herkesin kendi verisi olmalı, repoya girmemeli)
 /veri/
